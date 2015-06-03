@@ -16,6 +16,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ManageActivity"
+            android:label="@string/title_activity_manage" >
+        </activity>
     </application>
 
 </manifest>
