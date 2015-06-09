@@ -24,6 +24,7 @@ public class SharedPreferencesStore {
     private static final String KEY_MACHINE_NAME = "coffeeMachine{0}.name";
     private static final String KEY_MACHINE_COUNT = "coffeeMachine{0}.count";
     private static final String KEY_MACHINE_LAST = "coffeeMachine{0}.last";
+    private static final String KEY_MACHINE_FREE = "coffeeMachine{0}.free";
 
     private final SharedPreferences sharedPreferences;
 
@@ -42,6 +43,10 @@ public class SharedPreferencesStore {
             // get the coffee machine
             long machineId = sharedPreferences.getLong(MessageFormat.format(KEY_MACHINE_ID, i), -1);
             if (machineId == -1) {
+                // check if this slot is marked as free -> there must be something at i + 1
+                if (sharedPreferences.getBoolean(MessageFormat.format(KEY_MACHINE_FREE, i), false)) {
+                    continue;
+                }
                 break; // we found all the machines
             }
 
@@ -90,6 +95,8 @@ public class SharedPreferencesStore {
         editor.putString(MessageFormat.format(KEY_MACHINE_NAME, id), coffeeMachine.getName());
         editor.putInt(MessageFormat.format(KEY_MACHINE_COUNT, id), coffeeMachine.getCount());
         editor.putLong(MessageFormat.format(KEY_MACHINE_LAST, id), coffeeMachine.getLast() != null ? coffeeMachine.getLast().getTime() : 0L);
+        // in case someone added at a place of the free token, remove it
+        editor.remove(MessageFormat.format(KEY_MACHINE_FREE, coffeeMachine.getId()));
         // commit the changes
         editor.commit();
     }
@@ -104,6 +111,8 @@ public class SharedPreferencesStore {
         editor.remove(MessageFormat.format(KEY_MACHINE_NAME, coffeeMachine.getId()));
         editor.remove(MessageFormat.format(KEY_MACHINE_COUNT, coffeeMachine.getId()));
         editor.remove(MessageFormat.format(KEY_MACHINE_LAST, coffeeMachine.getId()));
+        // mark this place as free slot: loadAll will find any coffee machines after this indx
+        editor.putBoolean(MessageFormat.format(KEY_MACHINE_FREE, coffeeMachine.getId()), true);
         // commit the changes
         editor.commit();
     }
